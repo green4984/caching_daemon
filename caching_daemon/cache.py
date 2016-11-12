@@ -55,11 +55,16 @@ def register_cached_function(timeout=10, args_callback=None, kwargs_callback=Non
     def _wrapper(func):
         @functools.wraps(func)
         def _wrapped(*args, **kwargs):
+            # TODO add thread maybe
             caches = get_caches()
             _id = func.func_name + func.func_code.co_filename + str(func.func_code.co_firstlineno)
             ms = timeout * 1000
             value = caches.get(_id)
             if value is None:
+                if callable(args_callback):
+                    args = args_callback()
+                if callable(kwargs_callback):
+                    kwargs = kwargs_callback()
                 value = func(*args, **kwargs)
                 caches.set(_id, value, ms)
             return value
